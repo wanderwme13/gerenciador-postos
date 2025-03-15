@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Postos</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: auto; }
+        .box { margin: 20px 0; padding: 10px; border: 1px solid #ddd; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciador de Postos</h1>
+        
+        <div class="box">
+            <h2>Adicionar Posto</h2>
+            <input type="text" id="postoNome" placeholder="Nome do Posto">
+            <button onclick="adicionarPosto()">Adicionar</button>
+        </div>
+        
+        <div class="box">
+            <h2>Postos Cadastrados</h2>
+            <ul id="listaPostos"></ul>
+        </div>
+    </div>
+    
+    <script>
+        // Carrega os postos do localStorage
+        function carregarPostos() {
+            let postos = JSON.parse(localStorage.getItem("postos")) || [];
+            let lista = document.getElementById("listaPostos");
+            lista.innerHTML = "";
+            postos.forEach((posto, index) => {
+                lista.innerHTML += `<li>${posto} <button onclick="removerPosto(${index})">Remover</button></li>`;
+            });
+        }
+        
+        // Adiciona um posto
+        function adicionarPosto() {
+            let nome = document.getElementById("postoNome").value;
+            if (nome.trim() === "") return;
+            let postos = JSON.parse(localStorage.getItem("postos")) || [];
+            postos.push(nome);
+            localStorage.setItem("postos", JSON.stringify(postos));
+            document.getElementById("postoNome").value = "";
+            carregarPostos();
+        }
+        
+        // Remove um posto
+        function removerPosto(index) {
+            let postos = JSON.parse(localStorage.getItem("postos")) || [];
+            postos.splice(index, 1);
+            localStorage.setItem("postos", JSON.stringify(postos));
+            carregarPostos();
+        }
+        
+        // Inicializa a lista ao carregar a página
+        window.onload = carregarPostos;
+    </script>
+</body>
+</html>
