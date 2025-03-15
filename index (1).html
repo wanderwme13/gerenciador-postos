@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Postos</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: auto; }
+        .box { margin: 20px 0; padding: 10px; border: 1px solid #ddd; padding: 10px; }
+        button { margin-top: 10px; cursor: pointer; }
+        .posto { cursor: pointer; color: blue; text-decoration: underline; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciador de Postos</h1>
+        
+        <div class="box">
+            <h2>Adicionar Posto</h2>
+            <input type="text" id="postoNome" placeholder="Nome do Posto">
+            <button onclick="adicionarPosto()">Adicionar</button>
+        </div>
+        
+        <div class="box">
+            <h2>Postos Cadastrados</h2>
+            <ul id="listaPostos"></ul>
+        </div>
+        
+        <div class="box hidden" id="detalhesPosto">
+            <h2 id="postoTitulo"></h2>
+            <h3>Gerenciar Atividades</h3>
+            <input type="text" id="atividadeDescricao" placeholder="Descrição da atividade">
+            <select id="atividadeStatus">
+                <option value="pendente">Pendente</option>
+                <option value="em andamento">Em andamento</option>
+                <option value="concluído">Concluído</option>
+            </select>
+            <button onclick="adicionarAtividade()">Adicionar Atividade</button>
+            <ul id="listaAtividades"></ul>
+            
+            <h3>Registrar Queixa</h3>
+            <input type="text" id="queixaDescricao" placeholder="Descrição da queixa">
+            <button onclick="adicionarQueixa()">Adicionar Queixa</button>
+            <ul id="listaQueixas"></ul>
+        </div>
+    </div>
+    
+    <script>
+        let postos = JSON.parse(localStorage.getItem("postos")) || [];
+        let atividades = JSON.parse(localStorage.getItem("atividades")) || {};
+        let queixas = JSON.parse(localStorage.getItem("queixas")) || {};
+        let postoSelecionado = null;
+
+        function carregarPostos() {
+            let lista = document.getElementById("listaPostos");
+            lista.innerHTML = "";
+            postos.forEach((posto, index) => {
+                lista.innerHTML += `<li><span class="posto" onclick="selecionarPosto(${index})">${posto}</span> <button onclick="removerPosto(${index})">Remover</button></li>`;
+            });
+        }
+        
+        function adicionarPosto() {
+            let nome = document.getElementById("postoNome").value;
+            if (nome.trim() === "") return;
+            postos.push(nome);
+            atividades[postos.length - 1] = [];
+            queixas[postos.length - 1] = [];
+            localStorage.setItem("postos", JSON.stringify(postos));
+            localStorage.setItem("atividades", JSON.stringify(atividades));
+            localStorage.setItem("queixas", JSON.stringify(queixas));
+            document.getElementById("postoNome").value = "";
+            carregarPostos();
+        }
+        
+        function removerPosto(index) {
+            postos.splice(index, 1);
+            delete atividades[index];
+            delete queixas[index];
+            localStorage.setItem("postos", JSON.stringify(postos));
+            localStorage.setItem("atividades", JSON.stringify(atividades));
+            localStorage.setItem("queixas", JSON.stringify(queixas));
+            carregarPostos();
+            document.getElementById("detalhesPosto").classList.add("hidden");
+        }
+        
+        function selecionarPosto(index) {
+            postoSelecionado = index;
+            document.getElementById("postoTitulo").innerText = postos[index];
+            document.getElementById("detalhesPosto").classList.remove("hidden");
+            carregarAtividades();
+            carregarQueixas();
+        }
+        
+        function adicionarAtividade() {
+            let descricao = document.getElementById("atividadeDescricao").value;
+            let status = document.getElementById("atividadeStatus").value;
+            if (descricao.trim() === "") return;
+            atividades[postoSelecionado].push({ descricao, status });
+            localStorage.setItem("atividades", JSON.stringify(atividades));
+            document.getElementById("atividadeDescricao").value = "";
+            carregarAtividades();
+        }
+        
+        function carregarAtividades() {
+            let lista = document.getElementById("listaAtividades");
+            lista.innerHTML = "";
+            atividades[postoSelecionado].forEach((atividade, index) => {
+                lista.innerHTML += `<li>${atividade.descricao} - ${atividade.status}</li>`;
+            });
+        }
+        
+        function adicionarQueixa() {
+            let descricao = document.getElementById("queixaDescricao").value;
+            if (descricao.trim() === "") return;
+            queixas[postoSelecionado].push(descricao);
+            localStorage.setItem("queixas", JSON.stringify(queixas));
+            document.getElementById("queixaDescricao").value = "";
+            carregarQueixas();
+        }
+        
+        function carregarQueixas() {
+            let lista = document.getElementById("listaQueixas");
+            lista.innerHTML = "";
+            queixas[postoSelecionado].forEach((queixa, index) => {
+                lista.innerHTML += `<li>${queixa}</li>`;
+            });
+        }
+        
+        window.onload = carregarPostos;
+    </script>
+</body>
+</html>
